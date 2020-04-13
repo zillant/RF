@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace HackRF
+namespace HackView
 {
     public unsafe struct hackrf_transfer
     {
@@ -13,7 +13,7 @@ namespace HackRF
     }
 
     public unsafe delegate int hackrf_sample_block_cb_fn(hackrf_transfer* ptr);
-    public static class hackrflib
+    public static class NativeMethods
     {
         private const string lib = "libhackrf";
 
