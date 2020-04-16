@@ -10,7 +10,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HackView", "HackView\HackVi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HackRFSharp", "..\..\..\..\..\Downloads\Telegram Desktop\RF\RF\HackRF\HackRF\HackRFSharp.csproj", "{ED67AA81-BF0D-46FD-9A79-291C2A377BDF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HackRF_output", "..\..\..\..\..\Downloads\Telegram Desktop\RF\RF\HackRF\HackRF_output\HackRF_output.csproj", "{F9F52497-3DFE-4E93-8583-B8E6BB7730AA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HackRF_output", "HackRF_output\HackRF_output.csproj", "{F9F52497-3DFE-4E93-8583-B8E6BB7730AA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

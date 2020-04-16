@@ -8,66 +8,75 @@ using SDRSharp.Radio;
 
 namespace HackRF_output
 {
-    unsafe class Program : IFrontendController
+    unsafe class Program
     {
         private static HackRF_Controller Controller;
-        private static SDRSharp.Radio.SamplesAvailableDelegate availableDelegate;
+        private static SamplesAvailableDelegate SamplesAvailableDelegate;
 
-        public bool IsSoundCardBased => throw new NotImplementedException();
+        private static ComplexFifoStream iqStream;
+        private static double SampleRate = 8000000;
+        private static int _droppedBuffers;
 
-        public string SoundCardHint => throw new NotImplementedException();
-
-        public double Samplerate => throw new NotImplementedException();
-
-        public long Frequency { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        private static Complex* _bufferPtr;
+        private static UnsafeBuffer _buffer;
 
         static void Main(string[] args)
         {
+            if (_buffer == null)
+            {
+                _buffer = UnsafeBuffer.Create((int)SampleRate, sizeof(Complex));
+                _bufferPtr = (Complex*)_buffer;
+            }
             Controller = new HackRF_Controller();
-            // Console.WriteLine(Controller.Board_ID);
-
-            Controller.LNAGain = 10;
-            Controller.SampleRate = 1024000;
-            Controller.Frequency = 137100000;
-            Controller.SamplesAvailable += Controller_SamplesAvailable;
+            Console.Title = "HackRF Samples View";
             Console.ReadKey();
+
+      
+            
+            Controller.SampleRate = SampleRate;
+            Controller.Frequency = 100000000;
+
+            Controller.VGAGain = 40;
+            Controller.LNAGain = 24;
+
+            Controller.StartRx();
+           
+
+            while (true)
+            {
+                Controller.SamplesAvailable += Controller_SamplesAvailable;
+                
+            }
 
         }
 
         private static void Controller_SamplesAvailable(object sender, SamplesAvailableEventArgs samps)
         {
-            Program program = new Program();
-            availableDelegate(program, samps.Buffer, samps.Length);
+
+            // TO DO поднять комплексный буффер
+            if (iqStream == null) iqStream = new ComplexFifoStream(BlockMode.None);
+
+            if (iqStream.Length < SampleRate)
+            {
+                iqStream.Write(samps.Buffer, samps.Length);
+            }
+            else
+            {
+                _droppedBuffers++;
+            }
+
+            if (iqStream != null)
+            {
+                iqStream.Read(_bufferPtr, (int)SampleRate);
+
+                for (int i = 0; i < SampleRate; i++)
+                {
+                    Console.WriteLine(String.Format("{0:0.000000}\t{1:0.000000}", _bufferPtr[i].Real, _bufferPtr[i].Imag));
+                    //Console.WriteLine($"{_bufferPtr[i].Imag}           {_bufferPtr[i].Real}");
+                }
+            }
+
         }
 
-        public void Open()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Start(SamplesAvailableDelegate callback)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Stop()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Close()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void ShowSettingGUI(System.Windows.Forms.IWin32Window parent)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void HideSettingGUI()
-        {
-            throw new NotImplementedException();
-        }
     }
 }
