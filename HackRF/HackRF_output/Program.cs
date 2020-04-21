@@ -39,7 +39,7 @@ namespace HackRF_output
             Controller.VGAGain = 40;
             Controller.LNAGain = 24;
 
-            Controller.StartRx();
+            Controller.StartTx();
            
 
             while (true)
@@ -53,8 +53,9 @@ namespace HackRF_output
         private static void Controller_SamplesAvailable(object sender, SamplesAvailableEventArgs samps)
         {
 
-            // TO DO поднять комплексный буффер
+            // IF RX Mode
             if (iqStream == null) iqStream = new ComplexFifoStream(BlockMode.None);
+
 
             if (iqStream.Length < SampleRate)
             {
@@ -64,6 +65,7 @@ namespace HackRF_output
             {
                 _droppedBuffers++;
             }
+
 
             if (iqStream != null)
             {
@@ -76,6 +78,11 @@ namespace HackRF_output
                 }
             }
 
+            // TO DO if TX Mode
+            //if (TXmode)
+            //{
+            //    samps.Buffer =
+            //}
         }
 
     }
