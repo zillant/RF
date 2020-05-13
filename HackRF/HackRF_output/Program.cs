@@ -1,11 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using HackRF;
 using SDRSharp.Radio;
-using System.IO;
+using HackRFSharp;
 
 namespace HackRF_output
 {

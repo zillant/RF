@@ -4,18 +4,19 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-using HackRF;
+
+
 using SDRSharp.Radio;
 
-namespace HackRF
+namespace HackRFSharp
 {
     public unsafe class HackRF_Controller
     {
         private IntPtr _device;
         public int HackRF_Result { get; set; }
         public string Board_ID { get; private set; }
-        public bool isStreaming {private get; set; }
-        
+        public bool isStreaming { private get; set; }
+
         public event SamplesAvailableDelegate SamplesAvailable;
 
         private readonly SamplesAvailableEventArgs _eventArgs = new SamplesAvailableEventArgs();
@@ -67,13 +68,13 @@ namespace HackRF
                 hackrflib.hackrf_close(_device);
                 hackrflib.hackrf_exit();
             }
-           if (_gcHandle.IsAllocated) _gcHandle.Free();
+            if (_gcHandle.IsAllocated) _gcHandle.Free();
             GC.SuppressFinalize(this);
         }
 
-        private int HackRFSamplesAvailable(hackrf_transfer* samplesPtr )
+        private int HackRFSamplesAvailable(hackrf_transfer* samplesPtr)
         {
-                        
+
             return 0;
         }
 
