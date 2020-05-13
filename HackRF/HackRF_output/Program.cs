@@ -43,15 +43,15 @@ namespace HackRF_output
             Controller.LNAGain = 24;
 
 
-            if (TxMode)
-            {
-                FileStream fs = new FileStream(filename, FileMode.Open);
-                byte[] array = new byte[fs.Length];
-                fs.Read(array, 0, array.Length);
-                sbyte[] iqArray = Array.ConvertAll(array, b => unchecked((sbyte)b));
-                // TO DO Convert iqArray To ComplexFifoStream
-                Controller.StartTx();
-            }
+            //if (TxMode)
+            //{
+            //    //FileStream fs = new FileStream(filename, FileMode.Open);
+            //    byte[] array = new byte[fs.Length];
+            //    fs.Read(array, 0, array.Length);
+            //    sbyte[] iqArray = Array.ConvertAll(array, b => unchecked((sbyte)b));
+            //    // TO DO Convert iqArray To ComplexFifoStream
+            //    Controller.StartTx();
+            //}
 
             while (true)
             {
@@ -95,10 +95,10 @@ namespace HackRF_output
             //}
         }
 
-        private static void ReadSFile(string filename, out sbyte[] iqArray)
-        {
+        //private static void ReadSFile(string filename, out sbyte[] iqArray)
+        //{
             
-        }
+        //}
 
     } 
 }

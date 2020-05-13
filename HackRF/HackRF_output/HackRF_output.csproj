@@ -36,7 +36,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="HackRFSharp">
-      <HintPath>..\HackRF\bin\Debug\HackRFSharp.dll</HintPath>
+      <HintPath>..\HackRF\obj\Debug\HackRFSharp.dll</HintPath>
     </Reference>
     <Reference Include="SDRSharp.Radio, Version=0.0.0.0, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>

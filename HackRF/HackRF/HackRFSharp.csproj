@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{ED67AA81-BF0D-46FD-9A79-291C2A377BDF}</ProjectGuid>
+    <ProjectGuid>{7BE6DBE9-2EC4-42FD-8F30-B8317AA50247}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>HackRFSharp</RootNamespace>
