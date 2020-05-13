@@ -35,9 +35,8 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="HackRFSharp, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\HackRFunmanagedCode\bin\Debug\HackRFSharp.dll</HintPath>
+    <Reference Include="HackRFSharp">
+      <HintPath>..\HackRF\bin\Debug\HackRFSharp.dll</HintPath>
     </Reference>
     <Reference Include="SDRSharp.Radio, Version=0.0.0.0, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>

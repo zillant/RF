@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace HackRFSharp
+namespace HackRF
 {
     public unsafe struct hackrf_transfer
     {
@@ -48,7 +48,7 @@ namespace HackRFSharp
         /// <returns></returns>
         [DllImport(lib, CallingConvention = CallingConvention.Cdecl)]
         public static extern int hackrf_close(IntPtr dev);
-
+        
         /// <summary>
         /// Setting Sample rate
         /// </summary>
@@ -109,7 +109,7 @@ namespace HackRFSharp
         /// <returns></returns>
         [DllImport(lib, EntryPoint = "hackrf_set_lna_gain", CallingConvention = CallingConvention.Cdecl)]
         public static extern int hackrf_set_lna_gain(IntPtr dev, UInt32 value);
-
+        
         /// <summary>
         /// Set VGA gain. Range 0-62 (step 2dB)
         /// </summary>
@@ -150,7 +150,7 @@ namespace HackRFSharp
 
         //[DllImport(lib, CallingConvention = CallingConvention.Cdecl)]
         //private static extern IntPtr hackrf_board_id_name_native(uint index);
-
+        
         ///// <summary>
         ///// read HackRF ID
         ///// </summary>

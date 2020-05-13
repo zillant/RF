@@ -1,6 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using HackRF;
 using SDRSharp.Radio;
-using HackRFSharp;
 
 namespace HackRF_output
 {
@@ -28,15 +32,16 @@ namespace HackRF_output
             Controller = new HackRF_Controller();
             Console.Title = "HackRF Samples View";
             Console.ReadKey();
-
+            Console.WriteLine("Hello HackRF User!");
 
 
             Controller.SampleRate = SampleRate;
             Controller.Frequency = 100000000;
 
             Controller.VGAGain = 40;
-            Controller.LNAGain = 24;
+            //Controller.LNAGain = 24;
 
+            Controller.StartRx();
 
             //if (TxMode)
             //{
@@ -52,6 +57,7 @@ namespace HackRF_output
             {
                 Controller.SamplesAvailable += Controller_SamplesAvailable;
             }
+            
 
         }
 
@@ -92,8 +98,8 @@ namespace HackRF_output
 
         //private static void ReadSFile(string filename, out sbyte[] iqArray)
         //{
-            
+
         //}
 
-    } 
+    }
 }
