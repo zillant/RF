@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using HackRF;
 using SDRSharp.Radio;
@@ -20,7 +21,12 @@ namespace HackRF_output
         private static Complex* _rxBufferPtr;
         private static UnsafeBuffer _rxBuffer;
         private static UnsafeBuffer _txBuffer;
-        private static bool TxMode;
+        private static HackRFmode Mode;
+        private static CancellationTokenSource cancelTokenSource;
+        private static CancellationToken token;
+
+        private static sFile RxFile;
+
 
         static void Main(string[] args)
         {
@@ -29,19 +35,66 @@ namespace HackRF_output
                 _rxBuffer = UnsafeBuffer.Create((int)SampleRate, sizeof(Complex));
                 _rxBufferPtr = (Complex*)_rxBuffer;
             }
+                        
             Controller = new HackRF_Controller();
-            Console.Title = "HackRF Samples View";
-            Console.ReadKey();
-            Console.WriteLine("Hello HackRF User!");
 
+            Console.Title = "HackRF Samples View";
+            Console.WriteLine("Hello HackRF User!");
+            Console.WriteLine("Нажмите ECS для отмены");
 
             Controller.SampleRate = SampleRate;
             Controller.Frequency = 100000000;
 
             Controller.VGAGain = 40;
-            //Controller.LNAGain = 24;
+            Controller.LNAGain = 24;
 
-            Controller.StartRx();
+            cancelTokenSource = new CancellationTokenSource();
+            token = cancelTokenSource.Token;
+
+            //:TODO логика выбора y
+            Mode = HackRFmode.RX;
+
+            if (Mode == HackRFmode.RX)
+            {
+                RxFile = new sFile("TxFile.s");
+                RxFile.Open();
+                Controller.StartRx();
+                Task ReceivingSamples = new Task(() =>
+                {
+                    if (token.IsCancellationRequested)
+                    {
+                        Console.WriteLine("Прием остановлен");
+                        return;
+                    }
+
+                    Controller.SamplesAvailable += Controller_SamplesAvailable;
+
+                });
+
+                ReceivingSamples.Start();
+            }
+
+            Console.CancelKeyPress += Console_CancelKeyPress;
+            while (true)
+            {
+             
+                if (iqStream != null)
+                {
+                    iqStream.Read(_rxBufferPtr, (int)SampleRate);
+                    sbyte[] iBuffer = new sbyte[(int)SampleRate];
+                    sbyte[] qBuffer = new sbyte[(int)SampleRate];
+
+                    for (int i = 0; i < iqStream.Length; i++)
+                    {
+                        iBuffer[i] = FromFloatToSbyte(_rxBufferPtr[i].Real);
+                        qBuffer[i] = FromFloatToSbyte(_rxBufferPtr[i].Imag);
+                    }
+                    RxFile.WriteFile(iBuffer,qBuffer);
+                    Console.WriteLine(iBuffer.Length.ToString());
+                }
+            }
+
+            //Console.Read();
 
             //if (TxMode)
             //{
@@ -53,12 +106,21 @@ namespace HackRF_output
             //    Controller.StartTx();
             //}
 
-            while (true)
-            {
-                Controller.SamplesAvailable += Controller_SamplesAvailable;
-            }
-            
 
+        }
+
+        private static void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)
+        {
+            cancelTokenSource.Cancel();
+            RxFile.Close();
+        }
+
+        private static sbyte FromFloatToSbyte(float sample)
+        {
+            sample *= 127;
+            if (sample > 127) sample = 127;
+            else if (sample < -127) sample = -127;
+            return (sbyte)sample;
         }
 
         private static void Controller_SamplesAvailable(object sender, SamplesAvailableEventArgs samps)
@@ -78,16 +140,7 @@ namespace HackRF_output
             }
 
 
-            if (iqStream != null)
-            {
-                iqStream.Read(_rxBufferPtr, (int)SampleRate);
 
-                for (int i = 0; i < SampleRate; i++)
-                {
-                    Console.WriteLine(String.Format("{0:0.000000}\t{1:0.000000}", _rxBufferPtr[i].Real, _rxBufferPtr[i].Imag));
-                    //Console.WriteLine($"{_bufferPtr[i].Imag}           {_bufferPtr[i].Real}");
-                }
-            }
 
             // TO DO if TX Mode
             //if (TXmode)
@@ -95,11 +148,11 @@ namespace HackRF_output
             //    samps.Buffer =
             //}
         }
+    }
 
-        //private static void ReadSFile(string filename, out sbyte[] iqArray)
-        //{
-
-        //}
-
+    internal enum HackRFmode
+    {
+        TX,
+        RX
     }
 }

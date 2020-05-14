@@ -10,11 +10,38 @@ namespace HackRF_output
      public class sFile
     {
         private FileStream fs;
+        private BinaryWriter _bw;
         private byte[] iqByte;
         private sbyte[] iqSbyte;
-        public sbyte[] ReadFile(string filename)
+        private const long MaxStreamLength = 2147483648;
+        private readonly string _fileName;
+        
+        public sFile(string filename)
         {
-            fs = new FileStream(filename, FileMode.Open);
+            _fileName = filename;
+        }
+
+        public void Open()
+        {
+            if (_bw == null)
+            {
+                _bw = new BinaryWriter(File.Create(_fileName));
+            }
+        }
+
+        public void Close()
+        {
+            if (_bw != null)
+            {
+                _bw.Flush();
+                _bw.Close();
+                _bw = null;
+            }
+        }
+
+        public sbyte[] ReadFile()
+        {
+            fs = new FileStream(_fileName, FileMode.Open);
             int length = (int)fs.Length;
             fs.Read(iqByte, 0, length);
             iqSbyte = Array.ConvertAll(iqByte, b => unchecked((sbyte)b));
@@ -23,14 +50,36 @@ namespace HackRF_output
             return iqSbyte;
         }
 
-        public void WriteFile(string filename, sbyte[] iqArray)
+        public void WriteFile(sbyte[] iArray, sbyte[] qArray)
         {
-            fs = new FileStream(filename, FileMode.OpenOrCreate);
-            int length = iqArray.Length;
-            iqByte = Array.ConvertAll(iqSbyte, b => unchecked((byte)b));
-            fs.Write(iqByte, 0, length);
-            fs.Close();
-            fs.Dispose();
+            int length;
+            
+            if (iArray.Length == qArray.Length)
+            {
+                length = iArray.Length + qArray.Length;
+            }
+            else length = 0;
+
+            sbyte[] iqArray = new sbyte[length * 2];
+
+            var sample = 0;
+
+            for (int i = 0; i < length; i++)
+            {
+                iqArray[i] = iArray[sample];
+                i++;
+                iqArray[i] = qArray[sample];
+                sample++;
+            }
+
+            iqByte = Array.ConvertAll(iqArray, b => unchecked((byte)b));
+
+            if (_bw != null)
+            {
+                int toWrite = (int)Math.Min(MaxStreamLength - _bw.BaseStream.Length, iqByte.Length);
+
+                _bw.Write(iqByte, 0, toWrite);
+            }
         }
     }
 }
