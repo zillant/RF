@@ -19,6 +19,7 @@ namespace HackRF_output
         private static int _droppedBuffers;
 
         private static Complex* _rxBufferPtr;
+        private static Complex* _txBufferPtr;
         private static UnsafeBuffer _rxBuffer;
         private static UnsafeBuffer _txBuffer;
         private static HackRFmode Mode;
@@ -26,16 +27,11 @@ namespace HackRF_output
         private static CancellationToken token;
 
         private static sFile RxFile;
+        private static sFile TxFile;
 
 
         static void Main(string[] args)
         {
-            if (_rxBuffer == null)
-            {
-                _rxBuffer = UnsafeBuffer.Create((int)SampleRate, sizeof(Complex));
-                _rxBufferPtr = (Complex*)_rxBuffer;
-            }
-                        
             Controller = new HackRF_Controller();
 
             Console.Title = "HackRF Samples View";
@@ -52,11 +48,18 @@ namespace HackRF_output
             token = cancelTokenSource.Token;
 
             //:TODO логика выбора y
-            Mode = HackRFmode.RX;
+            Mode = HackRFmode.TX;
 
+            //Прием данных
             if (Mode == HackRFmode.RX)
             {
-                RxFile = new sFile("TxFile.s");
+                if (_rxBuffer == null)
+                {
+                    _rxBuffer = UnsafeBuffer.Create((int)SampleRate, sizeof(Complex));
+                    _rxBufferPtr = (Complex*)_rxBuffer;
+                }
+
+                RxFile = new sFile("RxFile.s");
                 RxFile.Open();
                 Controller.StartRx();
                 Task ReceivingSamples = new Task(() =>
@@ -74,24 +77,48 @@ namespace HackRF_output
                 ReceivingSamples.Start();
             }
 
+            // Передача данных
+            if (Mode == HackRFmode.TX)
+            {
+                TxFile = new sFile("TxFile.s");
+                _txBufferPtr = TxFile.ReadFile((int)SampleRate);
+
+                Controller.StartTx();
+                Task TransmitingSamples = new Task(() =>
+                {
+                    if (token.IsCancellationRequested)
+                    {
+                        Console.WriteLine("Пeредача остановлена");
+                        return;
+                    }
+
+                    Controller.SamplesAvailable += Controller_SamplesAvailable;
+                });
+                
+            }
+
             Console.CancelKeyPress += Console_CancelKeyPress;
             while (true)
             {
-             
-                if (iqStream != null)
+                if (Mode == HackRFmode.RX)
                 {
-                    iqStream.Read(_rxBufferPtr, (int)SampleRate);
-                    sbyte[] iBuffer = new sbyte[(int)SampleRate];
-                    sbyte[] qBuffer = new sbyte[(int)SampleRate];
-
-                    for (int i = 0; i < iqStream.Length; i++)
+                    if (iqStream != null)
                     {
-                        iBuffer[i] = FromFloatToSbyte(_rxBufferPtr[i].Real);
-                        qBuffer[i] = FromFloatToSbyte(_rxBufferPtr[i].Imag);
+                        iqStream.Read(_rxBufferPtr, (int)SampleRate);
+                        sbyte[] iBuffer = new sbyte[(int)SampleRate];
+                        sbyte[] qBuffer = new sbyte[(int)SampleRate];
+
+                        for (int i = 0; i < iqStream.Length; i++)
+                        {
+                            iBuffer[i] = FromFloatToSbyte(_rxBufferPtr[i].Real);
+                            qBuffer[i] = FromFloatToSbyte(_rxBufferPtr[i].Imag);
+                        }
+                        RxFile.WriteFile(iBuffer, qBuffer);
+                        Console.WriteLine(iBuffer.Length.ToString());
                     }
-                    RxFile.WriteFile(iBuffer,qBuffer);
-                    Console.WriteLine(iBuffer.Length.ToString());
                 }
+
+               
             }
 
             //Console.Read();
@@ -127,19 +154,25 @@ namespace HackRF_output
         {
 
             // IF RX Mode
-            if (iqStream == null) iqStream = new ComplexFifoStream(BlockMode.None);
-
-
-            if (iqStream.Length < SampleRate)
+            if (Mode == HackRFmode.RX)
             {
-                iqStream.Write(samps.Buffer, samps.Length);
+                if (iqStream == null) iqStream = new ComplexFifoStream(BlockMode.None);
+
+
+                if (iqStream.Length < SampleRate)
+                {
+                    iqStream.Write(samps.Buffer, samps.Length);
+                }
+                else
+                {
+                    _droppedBuffers++;
+                }
             }
-            else
+
+            if (Mode == HackRFmode.TX && _txBufferPtr != null)
             {
-                _droppedBuffers++;
+                //samps.Buffer = _txBufferPtr;
             }
-
-
 
 
             // TO DO if TX Mode
